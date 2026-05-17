@@ -1,0 +1,174 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ═══════════════════════════════════════════════════════════
+// ENUMS
+// ═══════════════════════════════════════════════════════════
+
+enum EstagioOS {
+  ABERTA
+  EM_ANALISE
+  ENVIADA_AO_CLIENTE
+  AGUARDANDO_RETORNO
+  AGENDADA
+  EM_EXECUCAO
+  CONCLUIDA
+  RELATORIO_ENTREGUE
+  ENCERRADA
+}
+
+enum TipoHistorico {
+  CRIACAO_OS
+  MUDANCA_ESTAGIO
+  PENDENCIA_CRIADA
+  PENDENCIA_CONCLUIDA
+  ANEXO_ADICIONADO
+  PDF_GERADO
+}
+
+// ═══════════════════════════════════════════════════════════
+// MODELOS
+// ═══════════════════════════════════════════════════════════
+
+model Usuario {
+  id           String   @id @default(cuid())
+  nome         String
+  email        String   @unique
+  senha_hash   String
+  ativo        Boolean  @default(true)
+  criado_em    DateTime @default(now())
+
+  clientes_criados    Cliente[]       @relation("ClienteCriador")
+  ordens_criadas      OrdemServico[]  @relation("OrdemCriador")
+  pendencias_criadas  Pendencia[]     @relation("PendenciaCriador")
+  pendencias_resolvidas Pendencia[]   @relation("PendenciaResolvedor")
+  historicos          Historico[]
+  relatorios_pdf      RelatorioPdf[]
+  anexos              Anexo[]
+
+  @@map("usuarios")
+}
+
+model Cliente {
+  id          String   @id @default(cuid())
+  nome        String
+  email       String?
+  telefone    String?
+  documento   String?
+  endereco    String?
+  observacoes String?
+  criado_em   DateTime @default(now())
+  criado_por  String
+  atualizado_em DateTime @updatedAt
+
+  criador     Usuario          @relation("ClienteCriador", fields: [criado_por], references: [id])
+  ordens      OrdemServico[]
+
+  @@index([criado_por])
+  @@map("clientes")
+}
+
+model OrdemServico {
+  id            String    @id @default(cuid())
+  numero        String    @unique
+  titulo        String
+  descricao     String?
+  cliente_id    String
+  estagio       EstagioOS @default(ABERTA)
+  data_previsao DateTime?
+  criado_em     DateTime  @default(now())
+  criado_por    String
+  atualizado_em DateTime  @updatedAt
+
+  cliente     Cliente        @relation(fields: [cliente_id], references: [id])
+  criador     Usuario        @relation("OrdemCriador", fields: [criado_por], references: [id])
+  pendencias  Pendencia[]
+  historicos  Historico[]
+  relatorios  RelatorioPdf[]
+  anexos      Anexo[]
+
+  @@index([cliente_id])
+  @@index([estagio])
+  @@index([criado_por])
+  @@map("ordens_servico")
+}
+
+model Pendencia {
+  id             String    @id @default(cuid())
+  ordem_id       String
+  descricao      String
+  resolvida      Boolean   @default(false)
+  data_resolucao DateTime?
+  criado_em      DateTime  @default(now())
+  criado_por     String
+  resolvido_por  String?
+
+  ordem          OrdemServico @relation(fields: [ordem_id], references: [id])
+  criador        Usuario      @relation("PendenciaCriador", fields: [criado_por], references: [id])
+  resolvedor     Usuario?     @relation("PendenciaResolvedor", fields: [resolvido_por], references: [id])
+
+  @@index([ordem_id])
+  @@index([ordem_id, resolvida])
+  @@index([criado_por])
+  @@map("pendencias")
+}
+
+model Historico {
+  id               String        @id @default(cuid())
+  ordem_id         String
+  usuario_id       String
+  tipo             TipoHistorico
+  descricao        String
+  estagio_anterior EstagioOS?
+  estagio_novo     EstagioOS?
+  nota             String?
+  criado_em        DateTime      @default(now())
+
+  ordem   OrdemServico @relation(fields: [ordem_id], references: [id])
+  usuario Usuario      @relation(fields: [usuario_id], references: [id])
+
+  @@index([ordem_id, criado_em])
+  @@index([usuario_id])
+  @@index([tipo])
+  @@map("historico")
+}
+
+model RelatorioPdf {
+  id              String   @id @default(cuid())
+  ordem_id        String
+  nome_arquivo    String
+  caminho_arquivo String
+  tamanho_bytes   Int?
+  criado_em       DateTime @default(now())
+  criado_por      String
+
+  ordem  OrdemServico @relation(fields: [ordem_id], references: [id])
+  criador Usuario      @relation(fields: [criado_por], references: [id])
+
+  @@index([ordem_id])
+  @@map("relatorios_pdf")
+}
+
+model Anexo {
+  id              String   @id @default(cuid())
+  ordem_id        String
+  nome_original   String
+  nome_arquivo    String
+  caminho_arquivo String
+  tipo_mime       String?
+  tamanho_bytes   Int?
+  criado_em       DateTime @default(now())
+  criado_por      String
+
+  ordem  OrdemServico @relation(fields: [ordem_id], references: [id])
+  criador Usuario      @relation(fields: [criado_por], references: [id])
+
+  @@index([ordem_id])
+  @@map("anexos")
+}

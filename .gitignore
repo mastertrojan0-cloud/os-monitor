@@ -1,0 +1,29 @@
+node_modules/
+dist/
+.env
+*.log
+
+# Storage — gerado localmente
+storage/relatorios/*
+storage/anexos/*
+!storage/relatorios/.gitkeep
+!storage/anexos/.gitkeep
+
+# Backups locais
+backup_*.sql
+backup_*.zip
+backup_*.dump
+*.backup
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Prisma
+backend/node_modules/.prisma/
