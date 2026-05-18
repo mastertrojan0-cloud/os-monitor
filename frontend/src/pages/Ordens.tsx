@@ -167,7 +167,9 @@ function OrdemModal({ clientes, onClose, onSave, erro, carregando }: { clientes:
           </div>
           <input value={titulo} onChange={(e) => setTitulo(e.target.value)} placeholder="Título *" required minLength={5} maxLength={200} className="w-full px-3 py-2 border rounded-md text-sm" />
           <textarea value={descricao} onChange={(e) => setDescricao(e.target.value)} placeholder="Descrição" rows={3} className="w-full px-3 py-2 border rounded-md text-sm" />
-          <input type="date" value={dataPrevisao} onChange={(e) => setDataPrevisao(e.target.value)} className="w-full px-3 py-2 border rounded-md text-sm" />
+          <input type="date" value={dataPrevisao} onChange={(e) => setDataPrevisao(e.target.value)}
+            min={new Date().toISOString().split('T')[0]}
+            className="w-full px-3 py-2 border rounded-md text-sm" />
           {erro && <p className="text-sm text-red-600">{erro}</p>}
           <div className="flex justify-end space-x-3 pt-2">
             <button type="button" onClick={onClose} className="px-4 py-2 border rounded-md text-gray-600">Cancelar</button>

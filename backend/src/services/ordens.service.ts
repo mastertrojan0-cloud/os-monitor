@@ -111,6 +111,16 @@ export async function criar(data: any, usuarioId: string) {
     throw err;
   }
 
+  if (data_previsao) {
+    const hoje = new Date(); hoje.setHours(0, 0, 0, 0);
+    const prev = new Date(data_previsao); prev.setHours(0, 0, 0, 0);
+    if (prev.getTime() < hoje.getTime()) {
+      const err: any = new Error('A data de previsão não pode ser anterior a hoje.');
+      err.status = 400;
+      throw err;
+    }
+  }
+
   const cliente = await prisma.cliente.findUnique({ where: { id: cliente_id } });
   if (!cliente) {
     const err: any = new Error('Cliente informado não existe.');

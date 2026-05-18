@@ -41,7 +41,6 @@ export default function Dashboard() {
   }
 
   const osPorEstagio = data?.os_por_estagio || {};
-  const estagiosComValor = Object.entries(osPorEstagio).filter(([, v]) => (v as number) > 0);
 
   return (
     <div className="space-y-6">
@@ -85,16 +84,8 @@ export default function Dashboard() {
           <h3 className="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-3">
             Ordens de Serviço por estágio
           </h3>
-          {estagiosComValor.length === 0 ? (
-            <div className="bg-white rounded-lg border border-dashed border-gray-300 p-8 text-center">
-              <p className="text-gray-400 text-sm">Nenhuma OS cadastrada.</p>
-              <Link to="/ordens" className="text-blue-600 text-sm hover:underline mt-2 inline-block">
-                Criar primeira OS
-              </Link>
-            </div>
-          ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-              {Object.entries(osPorEstagio).map(([estagio, count]) => {
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            {Object.entries(osPorEstagio).map(([estagio, count]) => {
                 const c = CORES_CARD[estagio] || { bg: 'bg-gray-50', text: 'text-gray-600', border: 'border-gray-200' };
                 const n = count as number;
                 return (
@@ -105,7 +96,6 @@ export default function Dashboard() {
                 );
               })}
             </div>
-          )}
         </div>
 
         {/* Alertas */}
@@ -122,16 +112,10 @@ export default function Dashboard() {
             <div className="space-y-2 max-h-96 overflow-y-auto">
               {alertas.alertas.map((a: any) => (
                 <Link key={a.id} to={`/ordens/${a.ordem_id}`}
-                  className={`block p-3 rounded-lg text-sm border-l-4 transition-colors hover:shadow ${
-                    a.nivel === 'CRITICO'
-                      ? 'bg-red-50 border-red-500 hover:bg-red-100'
-                      : 'bg-amber-50 border-amber-400 hover:bg-amber-100'
-                  }`}>
+                  className="block p-3 rounded-lg text-sm border-l-4 border-red-500 bg-red-50 hover:bg-red-100 transition-colors hover:shadow">
                   <div className="flex items-center justify-between mb-0.5">
                     <span className="font-mono text-xs text-gray-500">{a.numero}</span>
-                    <span className={`text-xs font-bold ${a.nivel === 'CRITICO' ? 'text-red-600' : 'text-amber-600'}`}>
-                      {a.dias_parado}d
-                    </span>
+                    <span className="text-xs font-bold text-red-600">{Math.floor(a.horas_parado)}h</span>
                   </div>
                   <p className="font-medium text-gray-800 text-xs truncate">{a.titulo}</p>
                   <p className="text-gray-500 text-xs">{a.cliente_nome}</p>

@@ -102,14 +102,13 @@ export default function OrdemDetalhe() {
   const horasNoEstagio = Math.floor((Date.now() - new Date(data.atualizado_em).getTime()) / 3600000);
   const tempoLabel = diasNoEstagio > 0 ? `${diasNoEstagio}d neste estágio` : `${horasNoEstagio}h neste estágio`;
 
-  // Status do prazo — baseado no tempo parado no estágio
-  let prazoStatus: 'ok' | 'atencao' | 'atraso' = 'ok';
+  // Status do prazo do estágio — 48h
+  let prazoStatus: 'ok' | 'atraso' = 'ok';
   if (horasNoEstagio >= 48) prazoStatus = 'atraso';
-  else if (horasNoEstagio >= 24) prazoStatus = 'atencao';
 
-  const prazoCores = { ok: 'border-green-400', atencao: 'border-amber-400', atraso: 'border-red-500' };
-  const prazoBg = { ok: 'bg-green-50', atencao: 'bg-amber-50', atraso: 'bg-red-50' };
-  const prazoText = { ok: 'text-green-700', atencao: 'text-amber-700', atraso: 'text-red-700' };
+  const prazoCores = { ok: 'border-green-400', atraso: 'border-red-500' };
+  const prazoBg = { ok: 'bg-green-50', atraso: 'bg-red-50' };
+  const prazoText = { ok: 'text-green-700', atraso: 'text-red-700' };
 
   return (
     <div className="max-w-5xl mx-auto space-y-4">
@@ -274,7 +273,7 @@ export default function OrdemDetalhe() {
           {!encerrada && (
             <div className={`${prazoBg[prazoStatus]} border ${prazoCores[prazoStatus]} rounded-xl p-3`}>
               <p className={`text-xs font-semibold ${prazoText[prazoStatus]}`}>
-                {prazoStatus === 'atraso' ? '🔴 Parado +48h' : prazoStatus === 'atencao' ? '🟡 Parado +24h' : '🟢 No prazo'}
+                {prazoStatus === 'atraso' ? '🔴 Excedeu 48h' : '🟢 Dentro do prazo (48h)'}
               </p>
               <p className="text-xs text-gray-600 mt-0.5">
                 {diasNoEstagio > 0 ? `${diasNoEstagio}d ${horasNoEstagio % 24}h neste estágio` : `${horasNoEstagio}h neste estágio`}

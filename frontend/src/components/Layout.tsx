@@ -17,7 +17,6 @@ export default function Layout() {
   });
 
   const totalAlertas = alertas?.total || 0;
-  const criticos = alertas?.alertas?.filter((a: any) => a.nivel === 'CRITICO').length || 0;
 
   function handleLogout() {
     logout();
@@ -51,7 +50,7 @@ export default function Layout() {
             <span className="flex items-center justify-between">
               Dashboard
               {totalAlertas > 0 && (
-                <span className={`text-xs px-2 py-0.5 rounded-full ${criticos > 0 ? 'bg-red-600 text-white' : 'bg-amber-500 text-white'}`}>
+                <span className="text-xs px-2 py-0.5 rounded-full bg-red-600 text-white">
                   {totalAlertas}
                 </span>
               )}

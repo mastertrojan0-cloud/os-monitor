@@ -13,19 +13,18 @@ interface Alerta {
   titulo: string;
   estagio: string;
   cliente_nome: string;
-  dias_parado: number;
-  nivel: 'ATENCAO' | 'CRITICO';
+  horas_parado: number;
   mensagem: string;
 }
 
 export async function listar(): Promise<{ total: number; alertas: Alerta[] }> {
   const agora = new Date();
-  const limite24h = new Date(agora.getTime() - 24 * 60 * 60 * 1000);
+  const limite48h = new Date(agora.getTime() - 48 * 60 * 60 * 1000);
 
   const ordensParadas = await prisma.ordemServico.findMany({
     where: {
       estagio: { in: ESTAGIOS_ATIVOS },
-      atualizado_em: { lt: limite24h },
+      atualizado_em: { lt: limite48h },
     },
     include: {
       cliente: { select: { nome: true } },
@@ -34,10 +33,7 @@ export async function listar(): Promise<{ total: number; alertas: Alerta[] }> {
   });
 
   const alertas: Alerta[] = ordensParadas.map((os) => {
-    const horasParado = (agora.getTime() - os.atualizado_em.getTime()) / (1000 * 60 * 60);
-    const diasParado = Math.floor(horasParado / 24);
-
-    const nivel = horasParado >= 48 ? 'CRITICO' as const : 'ATENCAO' as const;
+    const horasParado = Math.floor((agora.getTime() - os.atualizado_em.getTime()) / (1000 * 60 * 60));
 
     return {
       id: `alert-${os.id}`,
@@ -46,16 +42,13 @@ export async function listar(): Promise<{ total: number; alertas: Alerta[] }> {
       titulo: os.titulo,
       estagio: os.estagio,
       cliente_nome: os.cliente.nome,
-      dias_parado: diasParado,
-      nivel,
-      mensagem: nivel === 'CRITICO'
-        ? `OS parada há ${diasParado} dias no estágio ${os.estagio}`
-        : `OS parada há mais de 24h no estágio ${os.estagio}`,
+      horas_parado: horasParado,
+      mensagem: `OS parada há ${Math.floor(horasParado / 24)}d ${horasParado % 24}h no estágio ${os.estagio}`,
     };
   });
 
   return {
     total: alertas.length,
-    alertas: alertas.sort((a, b) => b.dias_parado - a.dias_parado),
+    alertas: alertas.sort((a, b) => b.horas_parado - a.horas_parado),
   };
 }
